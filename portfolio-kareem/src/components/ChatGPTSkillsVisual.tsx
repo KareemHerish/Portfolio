@@ -26,13 +26,13 @@ const BRANCHES: BranchDef[] = [
     id: "llms",
     name: "AI & Large Language Models",
     color: "#2dd4bf",
-    skills: ["Prompt Eng", "LangChain", "RAG Systems", "Vector DBs", "Transformers", "Streamlit", "Hugging Face"],
+    skills: ["Prompt Eng", "LangChain", "RAG Systems", "Vector DBs", "Transformers", "Streamlit", "Hugging Face","Computer Vision", "NLP"],
   },
   {
     id: "ml",
     name: "Machine Learning",
     color: "#38bdf8",
-    skills: ["Scikit-Learn", "Random Forest", "Gradient Boosting", "SVM", "Ensemble", "Cross-Val", "Regression"],
+    skills: ["Scikit-Learn", "Random Forest", "Gradient Boosting", "SVM", "Ensemble", "Cross-Val", "Regression","EDA"],
   },
   {
     id: "dl",
@@ -51,6 +51,18 @@ const BRANCHES: BranchDef[] = [
     name: "Design & Visualization",
     color: "#fbbf24",
     skills: ["Graphic Design", "Data Viz", "Matplotlib", "Seaborn", "UI Systems", "Infographics"],
+  },
+  {
+    id: "Math",
+    name: "Math_all",
+    color: "#fbbf24",
+    skills: ["Linear Algebra", "Calculus", "Probability", "Statistical Analysis"],
+  },
+  {
+    id: "Lang",
+    name: "P_L",
+    color: "#a78bfa",
+    skills: ["C++", "Java", "C", "Python", "Algorithms],
   },
   {
     id: "systems",
