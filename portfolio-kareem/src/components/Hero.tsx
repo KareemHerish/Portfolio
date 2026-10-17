@@ -134,7 +134,7 @@ const Hero = () => {
           <div className="relative flex justify-center animate-fade-up">
             <div className="absolute -inset-6 rounded-full bg-primary/30 blur-3xl animate-glow" />
             <img
-              src="/public/4f63c602-ef85-419e-a446-c5cb5a5e9639.png"
+              src="/4f63c602-ef85-419e-a446-c5cb5a5e9639.png"
               alt="Kareem Salah - Data Scientist"
               className="relative w-72 h-72 md:w-80 md:h-80 rounded-full object-cover border-2 border-primary/40"
             />
