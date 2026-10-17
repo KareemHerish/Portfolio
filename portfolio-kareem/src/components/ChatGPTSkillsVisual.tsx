@@ -26,49 +26,103 @@ const BRANCHES: BranchDef[] = [
     id: "llms",
     name: "AI & Large Language Models",
     color: "#2dd4bf",
-    skills: ["Prompt Eng", "LangChain", "RAG Systems", "Vector DBs", "Transformers", "Streamlit", "Hugging Face","Computer Vision", "NLP"],
+    skills: [
+      "Prompt Eng",
+      "LangChain",
+      "RAG Systems",
+      "Vector DBs",
+      "Transformers",
+      "Streamlit",
+      "Hugging Face",
+      "Computer Vision",
+      "NLP",
+    ],
   },
   {
     id: "ml",
     name: "Machine Learning",
     color: "#38bdf8",
-    skills: ["Scikit-Learn", "Random Forest", "Gradient Boosting", "SVM", "Ensemble", "Cross-Val", "Regression","EDA"],
+    skills: [
+      "Scikit-Learn",
+      "Random Forest",
+      "Gradient Boosting",
+      "SVM",
+      "Ensemble",
+      "Cross-Val",
+      "Regression",
+      "EDA",
+    ],
   },
   {
     id: "dl",
     name: "Deep Learning",
     color: "#818cf8",
-    skills: ["PyTorch", "TensorFlow", "Neural Nets", "CNNs", "Optimization", "Model Tuning"],
+    skills: [
+      "PyTorch",
+      "TensorFlow",
+      "Neural Nets",
+      "CNNs",
+      "Optimization",
+      "Model Tuning",
+    ],
   },
   {
     id: "data",
     name: "Data Science & Analytics",
     color: "#34d399",
-    skills: ["Python", "Pandas", "SQL", "NumPy", "EDA", "Feature Eng", "Data Cleaning"],
+    skills: [
+      "Python",
+      "Pandas",
+      "SQL",
+      "NumPy",
+      "EDA",
+      "Feature Eng",
+      "Data Cleaning",
+    ],
   },
   {
     id: "design",
     name: "Design & Visualization",
     color: "#fbbf24",
-    skills: ["Graphic Design", "Data Viz", "Matplotlib", "Seaborn", "UI Systems", "Infographics"],
+    skills: [
+      "Graphic Design",
+      "Data Viz",
+      "Matplotlib",
+      "Seaborn",
+      "UI Systems",
+      "Infographics",
+    ],
   },
   {
-    id: "Math",
-    name: "Math_all",
-    color: "#fbbf24",
-    skills: ["Linear Algebra", "Calculus", "Probability", "Statistical Analysis"],
+    id: "math",
+    name: "Mathematics",
+    color: "#f472b6",
+    skills: [
+      "Linear Algebra",
+      "Calculus",
+      "Probability",
+      "Statistical Analysis",
+    ],
   },
   {
-    id: "Lang",
-    name: "P_L",
-    color: "#a78bfa",
-    skills: ["C++", "Java", "C", "Python", "Algorithms],
+    id: "lang",
+    name: "Programming Languages",
+    color: "#fb7185",
+    skills: ["C++", "Java", "C", "Python", "Algorithms"],
   },
   {
     id: "systems",
     name: "Automation & Systems",
     color: "#a78bfa",
-    skills: ["Workflow Auto", "n8n", "C++", "Java", "Algorithms", "Git CI/CD", "Linux"],
+    skills: [
+      "Workflow Auto",
+      "n8n",
+      "C++",
+      "Java",
+      "Algorithms",
+      "Git CI/CD",
+      "Linux",
+    ],
   },
 ];
 
@@ -78,7 +132,8 @@ const R_OUTER = 350;
 const R_INNER = 85;
 
 const getSpiralPoint = (branchIndex: number, t: number) => {
-  const baseAngleDeg = branchIndex * 60 - 90;
+  const angleStep = 360 / BRANCHES.length;
+  const baseAngleDeg = branchIndex * angleStep - 90;
   const angleDeg = baseAngleDeg + 55 * t;
   const angleRad = (angleDeg * Math.PI) / 180;
   const r = R_OUTER - (R_OUTER - R_INNER) * t;
@@ -158,7 +213,7 @@ export const ChatGPTSkillsVisual = () => {
           />
         </g>
 
-        {/* 6 خطوط حلزونية للداخل */}
+        {/* خطوط حلزونية للداخل (ديناميكية حسب عدد الفروع) */}
         {BRANCHES.map((b, i) => {
           const p0 = getSpiralPoint(i, 0);
           const pMid = getSpiralPoint(i, 0.5);
@@ -205,7 +260,8 @@ export const ChatGPTSkillsVisual = () => {
             <div key={branch.id}>
               {Array.from({ length: numItems }).map((_, slotIdx) => {
                 const t = (offset + slotIdx / numItems) % 1;
-                const skillIndex = (Math.floor(offset * 2) + slotIdx) % branch.skills.length;
+                const skillIndex =
+                  (Math.floor(offset * 2) + slotIdx) % branch.skills.length;
                 const skillName = branch.skills[skillIndex];
                 const pos = getSpiralPoint(branchIdx, t);
 
