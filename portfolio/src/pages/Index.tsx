@@ -1,0 +1,33 @@
+import Header from "@/components/Header";
+import BackgroundCanvas from "@/components/BackgroundCanvas";
+import Hero from "@/components/Hero";
+import About from "@/components/About";
+import Experience from "@/components/Experience";
+import Education from "@/components/Education";
+import Volunteering from "@/components/Volunteering";
+import Skills from "@/components/Skills";
+import Projects from "@/components/Projects";
+import Certifications from "@/components/Certifications";
+import Contact from "@/components/Contact";
+import ScrollToTop from "@/components/ScrollToTop";
+
+const Index = () => (
+  <div className="relative min-h-screen isolate">
+    <BackgroundCanvas />
+    <Header />
+    <main>
+      <Hero />
+      <About />
+      <Experience />
+      <Education />
+      <Volunteering />
+      <Skills />
+      <Projects />
+      <Certifications />
+      <Contact />
+    </main>
+    <ScrollToTop />
+  </div>
+);
+
+export default Index;

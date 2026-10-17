@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme as default */
+    --background: 210 25% 97%;
+    --foreground: 228 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 228 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 228 30% 12%;
+    --primary: 168 82% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 18% 91%;
+    --secondary-foreground: 228 30% 12%;
+    --muted: 210 18% 92%;
+    --muted-foreground: 220 14% 42%;
+    --accent: 38 95% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 20% 86%;
+    --input: 214 20% 86%;
+    --ring: 168 82% 38%;
+    --radius: 0.9rem;
+    --gradient-primary: linear-gradient(120deg, hsl(168 82% 38%), hsl(195 90% 42%) 55%, hsl(38 95% 48%));
+    --gradient-secondary: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 20% 92%));
+    --shadow-tech: 0 20px 45px -15px hsl(168 82% 38% / 0.2);
+  }
+
+  .dark {
+    /* Dark theme */
+    --background: 228 30% 6%;
+    --foreground: 210 30% 96%;
+    --card: 228 26% 9%;
+    --card-foreground: 210 30% 96%;
+    --popover: 228 26% 9%;
+    --popover-foreground: 210 30% 96%;
+    --primary: 168 82% 52%;
+    --primary-foreground: 228 30% 6%;
+    --secondary: 228 22% 14%;
+    --secondary-foreground: 210 30% 96%;
+    --muted: 228 20% 13%;
+    --muted-foreground: 220 12% 64%;
+    --accent: 38 95% 60%;
+    --accent-foreground: 228 30% 6%;
+    --destructive: 0 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 228 18% 18%;
+    --input: 228 18% 20%;
+    --ring: 168 82% 52%;
+    --gradient-primary: linear-gradient(120deg, hsl(168 82% 52%), hsl(195 90% 60%) 55%, hsl(38 95% 60%));
+    --gradient-secondary: linear-gradient(135deg, hsl(228 26% 11%), hsl(228 26% 8%));
+    --shadow-tech: 0 24px 60px -20px hsl(168 82% 52% / 0.25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Manrope', sans-serif;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Sora', sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-card/60 backdrop-blur-xl border border-border/70;
+  }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+  }
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity .3s;
+    background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--primary) / .55), transparent 45%);
+  }
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s;
+    background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--primary) / .08), transparent 60%), hsl(var(--card));
+    margin: 1px;
+  }
+  .spotlight:hover::before,
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+  .lift {
+    transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-tech);
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
