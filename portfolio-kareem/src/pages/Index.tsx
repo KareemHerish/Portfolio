@@ -7,7 +7,7 @@ import Education from "@/components/Education";
 import Volunteering from "@/components/Volunteering";
 import Skills from "@/components/Skills";
 import Projects from "@/components/Projects";
-import Path from "@/components/Path";
+import Certifications from "@/components/Certifications";
 import Contact from "@/components/Contact";
 
 const Index = () => (
@@ -22,7 +22,7 @@ const Index = () => (
       <Volunteering />
       <Skills />
       <Projects />
-      <Path />
+      <Certifications />
       <Contact />
     </main>
   </div>
