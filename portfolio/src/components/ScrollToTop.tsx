@@ -6,19 +6,26 @@ const ScrollToTop = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      
-      // Show button after scrolling down 350px
-      setVisible(scrollY > 350);
+    let ticking = false;
 
-      // Calculate scroll progress percentage (0 to 100)
-      if (docHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (scrollY / docHeight) * 100));
-        setScrollProgress(progress);
-      }
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const docHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        
+        const shouldBeVisible = scrollY > 350;
+        setVisible(shouldBeVisible);
+
+        if (docHeight > 0 && shouldBeVisible) {
+          const progress = Math.round(Math.min(100, Math.max(0, (scrollY / docHeight) * 100)));
+          setScrollProgress(progress);
+        }
+        ticking = false;
+      });
     };
 
     handleScroll();
