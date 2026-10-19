@@ -51,10 +51,11 @@ const Header = () => {
   };
 
   useEffect(() => {
+    let ticking = false;
+
     const checkActiveSection = () => {
       if (isClickScrolling.current) return;
 
-      // Check if user is scrolled to or near bottom of the page
       const scrollBottom = window.innerHeight + window.scrollY;
       const docHeight = Math.max(
         document.body.scrollHeight,
@@ -67,13 +68,11 @@ const Header = () => {
         return;
       }
 
-      // If near top of page (hero area)
       if (window.scrollY < 120) {
         setActive(null);
         return;
       }
 
-      // Scan sections in reverse so that currently entered sections take precedence
       const reversed = [...links].reverse();
       const current = reversed.find(({ id }) => {
         const el = document.getElementById(id);
@@ -87,10 +86,20 @@ const Header = () => {
       }
     };
 
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          checkActiveSection();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
     checkActiveSection();
-    window.addEventListener("scroll", checkActiveSection, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", checkActiveSection);
+      window.removeEventListener("scroll", handleScroll);
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, []);
@@ -120,12 +129,12 @@ const Header = () => {
       if (id === "contact" || scrollBottom >= docHeight - 140) {
         setActive("contact");
       }
-    }, 950);
+    }, 650);
   };
 
   return (
-    <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4">
-      <div className="glass rounded-full w-full max-w-4xl border border-primary/35 ring-1 ring-primary/25 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.1),0_0_25px_-4px_hsl(var(--primary)/0.25)] bg-card/85 backdrop-blur-2xl transition-all">
+    <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transform-gpu">
+      <div className="glass rounded-full w-full max-w-4xl border border-primary/35 ring-1 ring-primary/25 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.1),0_0_25px_-4px_hsl(var(--primary)/0.25)] bg-card/90 backdrop-blur-md transition-all">
         <div className="flex items-center justify-between px-3.5 py-2">
           {/* Logo KS and Dark/Light Mode Toggle */}
           <div className="flex items-center gap-2">
