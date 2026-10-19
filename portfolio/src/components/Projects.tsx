@@ -372,80 +372,6 @@ const HealthViz = ({ c }: VizProps) => (
   </svg>
 );
 
-// FIFA 23: Player rating card + attribute weights & regression metric
-const FifaViz = ({ c }: VizProps) => {
-  const stats = [
-    { label: "Potential", val: 92, w: 115 },
-    { label: "Value", val: 89, w: 98 },
-    { label: "Special", val: 86, w: 90 },
-    { label: "Wage", val: 84, w: 82 },
-  ];
-
-  return (
-    <svg {...svgProps}>
-      {/* FIFA Player Card on Left */}
-      <g transform="translate(62, 24)" className="pv-pop">
-        <path
-          d="M 12 0 L 78 0 Q 88 0 88 10 L 88 116 L 48 144 L 8 116 L 8 10 Q 8 0 18 0 Z"
-          fill={c}
-          fillOpacity="0.1"
-          stroke={c}
-          strokeWidth="1.8"
-        />
-        <text x="30" y="38" fontSize="28" fontWeight="800" fill={c} className="font-mono">
-          89
-        </text>
-        <text x="30" y="52" fontSize="11" fontWeight="700" fill="currentColor" className="font-mono text-muted-foreground">
-          OVR
-        </text>
-        <line x1="20" y1="58" x2="76" y2="58" stroke={c} strokeOpacity="0.3" strokeWidth="1" />
-        <text x="48" y="78" textAnchor="middle" fontSize="10.5" fontWeight="600" fill="currentColor" className="text-foreground">
-          FIFA 23
-        </text>
-        <text x="48" y="94" textAnchor="middle" fontSize="9" fill={c} className="font-mono">
-          ★ ML Model
-        </text>
-      </g>
-
-      {/* Feature Attributes & Predictions on Right */}
-      <g transform="translate(182, 30)">
-        <text x="0" y="0" fontSize="11" fontWeight="600" fill="currentColor" className="font-mono text-foreground">
-          Feature Importance &amp; Prediction
-        </text>
-        {stats.map((s, i) => (
-          <g key={s.label} transform={`translate(0, ${18 + i * 28})`} className="pv-pop" style={{ animationDelay: `${i * 180}ms` }}>
-            <text x="0" y="10" fontSize="10" fill="currentColor" className="text-muted-foreground font-mono">
-              {s.label}
-            </text>
-            <text x="140" y="10" textAnchor="end" fontSize="10" fontWeight="700" fill={c} className="font-mono">
-              {s.val}
-            </text>
-            <rect x="0" y="16" width="140" height="5" rx="2.5" fill="currentColor" fillOpacity="0.12" />
-            <rect
-              x="0"
-              y="16"
-              width={s.w}
-              height="5"
-              rx="2.5"
-              fill={c}
-              className="pv-grow"
-              style={{ transformOrigin: "left" }}
-            />
-          </g>
-        ))}
-
-        {/* Prediction Accuracy Badge */}
-        <g transform="translate(0, 138)" className="pv-pop" style={{ animationDelay: "600ms" }}>
-          <rect x="0" y="0" width="140" height="22" rx="11" fill={c} fillOpacity="0.12" stroke={c} strokeOpacity="0.6" strokeWidth="1" />
-          <text x="70" y="14" textAnchor="middle" fontSize="9.5" fontWeight="700" fill={c} className="font-mono">
-            R²: 0.93 • High Precision
-          </text>
-        </g>
-      </g>
-    </svg>
-  );
-};
-
 /* ------------------------------------------------------------------ */
 /*  Content                                                            */
 /* ------------------------------------------------------------------ */
@@ -537,21 +463,6 @@ const PROJECTS: Project[] = [
     ],
     tags: ["UML", "RBAC", "Inventory", "Reporting"],
     Viz: FactoryViz,
-  },
-  {
-    id: "fifa-prediction",
-    title: "FIFA 23 Rating Prediction",
-    category: "Machine Learning",
-    accent: "#22c55e",
-    summary:
-      "Machine learning models predicting football player Overall ratings from EDA, market valuation, and core skill attributes.",
-    points: [
-      "Exploratory Data Analysis (EDA) uncovering key rating drivers",
-      "Regression models trained on Potential, Value, Wage, and Special attributes",
-      "Feature importance insights for scouting and talent valuation",
-    ],
-    tags: ["Machine Learning", "EDA", "Regression", "Scikit-Learn", "Feature Importance"],
-    Viz: FifaViz,
   },
   {
     id: "image",
