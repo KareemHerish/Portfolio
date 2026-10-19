@@ -25,6 +25,8 @@ const BackgroundCanvas = () => {
     const mouse = { x: -9999, y: -9999 };
     let pts: { x: number; y: number; vx: number; vy: number }[] = [];
     let isPaused = false;
+    let isScrolling = false;
+    let scrollTimeout = 0;
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -36,13 +38,13 @@ const BackgroundCanvas = () => {
       canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Lightweight particle count: max 44 particles
-      const count = Math.round(Math.min(44, (w * h) / 36000));
+      // 36 particles max for fluid 120fps performance
+      const count = Math.round(Math.min(36, (w * h) / 45000));
       pts = Array.from({ length: count }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
       }));
     };
 
@@ -54,24 +56,24 @@ const BackgroundCanvas = () => {
 
       ctx.clearRect(0, 0, w, h);
 
-      const lineAlpha = isLight ? 0.32 : 0.18;
+      const lineAlpha = isLight ? 0.30 : 0.16;
       const dotAlpha = isLight ? 0.85 : 0.65;
-      const dotRadius = isLight ? 2.0 : 1.6;
-      const maxDist = 115;
+      const dotRadius = isLight ? 1.8 : 1.5;
+      const maxDist = 110;
       const maxDistSq = maxDist * maxDist;
 
       // Update positions
-      const hasMouse = mouse.x > 0;
+      const hasMouse = mouse.x > 0 && !isScrolling;
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
         if (hasMouse) {
           const dx = p.x - mouse.x;
           const dy = p.y - mouse.y;
           const distSq = dx * dx + dy * dy;
-          if (distSq < 16900 && distSq > 0) { // < 130px
+          if (distSq < 14400 && distSq > 0) { // < 120px
             const d = Math.sqrt(distSq);
-            p.x += (dx / d) * 0.7;
-            p.y += (dy / d) * 0.7;
+            p.x += (dx / d) * 0.6;
+            p.y += (dy / d) * 0.6;
           }
         }
         p.x += p.vx;
@@ -80,34 +82,36 @@ const BackgroundCanvas = () => {
         if (p.y < 0 || p.y > h) p.vy *= -1;
       }
 
-      // 1. Batch draw all connection lines in a SINGLE stroke call
-      ctx.beginPath();
-      ctx.strokeStyle = `hsl(${primary} / ${lineAlpha})`;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < pts.length; i++) {
-        const a = pts[i];
-        for (let j = i + 1; j < pts.length; j++) {
-          const b = pts[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          if (Math.abs(dx) > maxDist || Math.abs(dy) > maxDist) continue;
-          if (dx * dx + dy * dy < maxDistSq) {
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
+      // 1. Batch draw connections (skip during fast scroll for max FPS)
+      if (!isScrolling) {
+        ctx.beginPath();
+        ctx.strokeStyle = `hsl(${primary} / ${lineAlpha})`;
+        ctx.lineWidth = 1;
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i];
+          for (let j = i + 1; j < pts.length; j++) {
+            const b = pts[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            if (Math.abs(dx) > maxDist || Math.abs(dy) > maxDist) continue;
+            if (dx * dx + dy * dy < maxDistSq) {
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+            }
+          }
+          if (hasMouse) {
+            const mdx = a.x - mouse.x;
+            const mdy = a.y - mouse.y;
+            if (Math.abs(mdx) < 130 && Math.abs(mdy) < 130 && (mdx * mdx + mdy * mdy < 16900)) {
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(mouse.x, mouse.y);
+            }
           }
         }
-        if (hasMouse) {
-          const mdx = a.x - mouse.x;
-          const mdy = a.y - mouse.y;
-          if (Math.abs(mdx) < 140 && Math.abs(mdy) < 140 && (mdx * mdx + mdy * mdy < 19600)) {
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(mouse.x, mouse.y);
-          }
-        }
+        ctx.stroke();
       }
-      ctx.stroke();
 
-      // 2. Batch draw all dots in a SINGLE fill call
+      // 2. Batch draw dots
       ctx.beginPath();
       ctx.fillStyle = `hsl(${primary} / ${dotAlpha})`;
       for (let i = 0; i < pts.length; i++) {
@@ -139,19 +143,30 @@ const BackgroundCanvas = () => {
       isPaused = document.hidden;
     };
 
+    const handleScroll = () => {
+      isScrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        isScrolling = false;
+      }, 70);
+    };
+
     resize();
     draw();
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     document.addEventListener("pointerleave", onLeave);
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(scrollTimeout);
       observer.disconnect();
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("pointerleave", onLeave);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
@@ -161,7 +176,7 @@ const BackgroundCanvas = () => {
     <canvas
       ref={ref}
       aria-hidden="true"
-      className="fixed inset-0 -z-10 pointer-events-none transform-gpu will-change-transform"
+      className="fixed inset-0 -z-10 pointer-events-none transform-gpu"
     />
   );
 };
