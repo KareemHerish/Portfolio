@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { Sun, Moon } from "lucide-react";
 import { scrollToId } from "@/hooks/use-reveal";
 
@@ -13,12 +13,24 @@ const links = [
   { id: "contact", label: "Contact" },
 ];
 
+interface TabPos {
+  x: number;
+  width: number;
+}
+
+interface SectionBounds {
+  id: string;
+  top: number;
+  bottom: number;
+}
+
 const Header = () => {
   const [active, setActive] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
-  const [pill, setPill] = useState({ left: 0, width: 0, visible: false });
   const [open, setOpen] = useState(false);
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabPositions = useRef<Record<string, TabPos>>({});
+  const sectionBounds = useRef<SectionBounds[]>([]);
   const isClickScrolling = useRef(false);
   const scrollTimeoutRef = useRef<number | null>(null);
 
@@ -50,66 +62,107 @@ const Header = () => {
     setTheme((t) => (t === "dark" ? "light" : "dark"));
   };
 
+  // Measure tab button geometries once (and on resize)
+  const measureTabs = () => {
+    links.forEach(({ id }) => {
+      const el = refs.current[id];
+      if (el) {
+        tabPositions.current[id] = {
+          x: el.offsetLeft,
+          width: el.offsetWidth,
+        };
+      }
+    });
+  };
+
+  // Measure section positions once (and on resize)
+  const measureSections = () => {
+    sectionBounds.current = links
+      .map(({ id }) => {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        const top = rect.top + window.scrollY;
+        return {
+          id,
+          top,
+          bottom: top + el.offsetHeight,
+        };
+      })
+      .filter(Boolean) as SectionBounds[];
+  };
+
+  useLayoutEffect(() => {
+    measureTabs();
+    measureSections();
+  }, []);
+
   useEffect(() => {
     let ticking = false;
 
-    const checkActiveSection = () => {
+    const updateActiveSection = () => {
       if (isClickScrolling.current) return;
 
-      const scrollBottom = window.innerHeight + window.scrollY;
+      const y = window.scrollY;
       const docHeight = Math.max(
         document.body.scrollHeight,
         document.documentElement.scrollHeight
       );
-      const isNearBottom = scrollBottom >= docHeight - 140;
+      const isNearBottom = y + window.innerHeight >= docHeight - 120;
 
       if (isNearBottom) {
-        setActive("contact");
+        setActive((prev) => (prev !== "contact" ? "contact" : prev));
         return;
       }
 
-      if (window.scrollY < 120) {
-        setActive(null);
+      if (y < 120) {
+        setActive((prev) => (prev !== null ? null : prev));
         return;
       }
 
-      const reversed = [...links].reverse();
-      const current = reversed.find(({ id }) => {
-        const el = document.getElementById(id);
-        if (!el) return false;
-        const r = el.getBoundingClientRect();
-        return r.top <= 200 && r.bottom >= 120;
-      });
-
-      if (current) {
-        setActive(current.id);
+      // Check against cached section numbers in memory — ZERO DOM layout queries!
+      const bounds = sectionBounds.current;
+      for (let i = bounds.length - 1; i >= 0; i--) {
+        const s = bounds[i];
+        if (y >= s.top - 200 && y < s.bottom - 100) {
+          setActive((prev) => (prev !== s.id ? s.id : prev));
+          return;
+        }
       }
     };
 
-    const handleScroll = () => {
+    const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          checkActiveSection();
+          updateActiveSection();
           ticking = false;
         });
         ticking = true;
       }
     };
 
-    checkActiveSection();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const onResize = () => {
+      measureTabs();
+      measureSections();
+      updateActiveSection();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
+
+    // Initial check
+    setTimeout(() => {
+      measureTabs();
+      measureSections();
+      updateActiveSection();
+    }, 100);
+
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    const target = hovered ?? active;
-    const el = target ? refs.current[target] : null;
-    if (el) setPill({ left: el.offsetLeft, width: el.offsetWidth, visible: true });
-    else setPill((p) => ({ ...p, visible: false }));
-  }, [hovered, active]);
 
   const go = (id: string) => {
     setActive(id);
@@ -121,16 +174,20 @@ const Header = () => {
     if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     scrollTimeoutRef.current = window.setTimeout(() => {
       isClickScrolling.current = false;
-      const scrollBottom = window.innerHeight + window.scrollY;
+      const y = window.scrollY;
       const docHeight = Math.max(
         document.body.scrollHeight,
         document.documentElement.scrollHeight
       );
-      if (id === "contact" || scrollBottom >= docHeight - 140) {
+      if (id === "contact" || y + window.innerHeight >= docHeight - 120) {
         setActive("contact");
       }
-    }, 650);
+    }, 550);
   };
+
+  // Immediate GPU transform calculation without double-rendering
+  const targetId = hovered ?? active;
+  const currentTab = targetId ? tabPositions.current[targetId] : null;
 
   return (
     <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 transform-gpu">
@@ -165,11 +222,17 @@ const Header = () => {
             </button>
           </div>
 
+          {/* Desktop Nav Items */}
           <div className="relative hidden md:flex items-center" onMouseLeave={() => setHovered(null)}>
+            {/* GPU Accelerated Smooth Sliding Pill */}
             <i
               aria-hidden="true"
-              className="absolute top-0 h-full rounded-full bg-secondary/90 border border-primary/20 shadow-sm transition-all duration-500 ease-[cubic-bezier(.34,1.56,.64,1)]"
-              style={{ left: pill.left, width: pill.width, opacity: pill.visible ? 1 : 0 }}
+              className="absolute top-0 left-0 h-full rounded-full bg-secondary/90 border border-primary/20 shadow-xs pointer-events-none transition-transform duration-150 ease-out will-change-transform"
+              style={{
+                transform: currentTab ? `translate3d(${currentTab.x}px, 0, 0)` : "translate3d(0, 0, 0)",
+                width: currentTab ? `${currentTab.width}px` : 0,
+                opacity: currentTab ? 1 : 0,
+              }}
             />
             {links.map((l) => (
               <button
@@ -177,7 +240,7 @@ const Header = () => {
                 ref={(el) => (refs.current[l.id] = el)}
                 onMouseEnter={() => setHovered(l.id)}
                 onClick={() => go(l.id)}
-                className={`relative z-10 px-3 lg:px-4 py-1.5 text-xs lg:text-sm rounded-full transition-all duration-200 ${
+                className={`relative z-10 px-3 lg:px-4 py-1.5 text-xs lg:text-sm rounded-full transition-colors duration-150 ${
                   active === l.id
                     ? "text-primary font-bold shadow-xs"
                     : "text-muted-foreground hover:text-foreground font-medium"
@@ -188,6 +251,7 @@ const Header = () => {
             ))}
           </div>
 
+          {/* Mobile Menu Button */}
           <button
             className="md:hidden h-10 w-10 grid place-items-center"
             aria-label="Menu"
@@ -208,6 +272,7 @@ const Header = () => {
           </button>
         </div>
 
+        {/* Mobile Dropdown */}
         {open && (
           <div className="md:hidden flex flex-col px-3 pb-3 animate-fade-up">
             {links.map((l) => (
